@@ -2,130 +2,171 @@
 <html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
-    <title>OC字符位置转换工具（支持自定义基础逻辑字符串）</title>
+    <title>Code-Str转换小工具</title>
     <style>
-        body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-        .container { background: #f5f5f5; padding: 2rem; border-radius: 8px; }
-        h1 { color: #333; text-align: center; }
-        .input-group { margin: 1rem 0; }
-        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
-        input[type="text"], textarea { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px; resize: vertical; }
-        textarea { min-height: 100px; }
-        button { background: #007bff; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
-        button:hover { background: #0056b3; }
-        .result { margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 4px; border: 1px solid #eee; }
-        .result h3 { margin-top: 0; color: #333; }
-        .output { font-family: monospace; font-size: 1rem; white-space: pre-wrap; word-break: break-all; }
-        .tip { font-size: 0.9rem; color: #666; margin-top: 0.3rem; }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            border: 1px solid #eee;
+            border-radius: 8px;
+        }
+        .input-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        button {
+            padding: 10px 20px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #0056b3;
+        }
+        .log-area {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>转换小工具</h1>
-        
-        <!-- 新增：基础逻辑字符串输入框 -->
+        <h1>Code-Str转换小工具</h1>
         <div class="input-group">
-            <label for="referStringInput">逻辑字符</label>
-            <input
-                type="text"
-                id="referStringInput"
-                placeholder="请输入逻辑字符"
-                value=""
-            >
+            <label for="referInput">逻辑字符</label>
+            <input type="text" id="referInput" value="" placeholder="逻辑字符">
         </div>
-        
         <div class="input-group">
-            <label for="wordInput">输入单词组（用英文逗号分隔）</label>
-            <textarea id="wordInput" placeholder="请输入单词组"></textarea>
+            <label for="wordsInput">输入字符串</label>
+            <input type="text" id="wordsInput" value="" placeholder="请输入类似ab-010203的字符串">
         </div>
-        
-        <button onclick="runConversion()">执行转换</button>
-        
-        <div class="result">
-            <h3>转换结果</h3>
-            <p><strong></strong><span class="output" id="finalOutput"></span></p>
+        <button onclick="begin()">执行转换</button>
+        <div class="log-area" id="logResult">
+            执行结果将显示在这里...
         </div>
     </div>
 
     <script>
         /**
-         * 功能1：根据字符获取位置（对应OC的 returnIndexWithReferString:charToFind:）
-         * @param {string} referString - 基础逻辑字符串
-         * @param {string} charToFind - 要查找的单个字符（小写）
-         * @returns {number} 位置（从1开始，与OC逻辑一致；找不到返回0）
+         * 主方法：对应OC中的begin方法
          */
-        function returnIndexWithReferString(referString, charToFind) {
-            const index = referString.indexOf(charToFind);
-            return index >= 0 ? index + 1 : 0;
+        function begin() {
+            const logElement = document.getElementById('logResult');
+            logElement.innerHTML = ''; // 清空日志
+
+            // 获取用户输入的参考字符串
+            const referString = document.getElementById('referInput').value.trim();
+            if (!referString) {
+                log('错误：逻辑字符不能为空');
+                return;
+            }
+
+            const words = document.getElementById('wordsInput').value.trim();
+            const array = words.split('-');
+
+            if (array.length === 2) {
+                // 处理第一个部分（字母转位置）
+                let indexwords = '';
+                const indexWord = array[0];
+                for (let i = 0; i < indexWord.length; i++) {
+                    const letter = indexWord.charAt(i);
+                    const index = changeToNewWordWithReferString(referString, letter);
+                    indexwords += index;
+                }
+
+                // 处理第二个部分（位置转字母）
+                let strwords = '';
+                const codeWord = array[1];
+                let start = 0;
+                const codeLength = codeWord.length;
+                // 确保字符串长度是偶数（每两位一组）
+                if (codeLength % 2 !== 0) {
+                    log('错误：第二部分字符串长度不是偶数，格式不正确');
+                    return;
+                }
+
+                for (let i = 0; i < codeLength / 2; i++) {
+                    const code = codeWord.substring(start, start + 2);
+                    const word = returnIndexStringWithReferString(referString, parseInt(code));
+                    strwords += word;
+                    start += 2;
+                }
+
+                const finishword = `${indexwords}-${strwords}`;
+                log(`${finishword}`);
+            } else {
+                log('字符串格式不正确');
+            }
         }
 
         /**
-         * 功能2：根据位置获取字符（对应OC的 returnIndexStringWithReferString:index:）
-         * @param {string} referString - 基础逻辑字符串
-         * @param {number} index - 位置（从1开始）
-         * @returns {string} 对应的字符（非法位置返回空）
-         */
-        function returnIndexStringWithReferString(referString, index) {
-            if (index < 1 || index > referString.length) return "";
-            return referString.charAt(index - 1);
-        }
-
-        /**
-         * 功能3：单词转位置字符串（对应OC的 changeToNewWordWithReferString:word:）
-         * @param {string} referString - 基础逻辑字符串
-         * @param {string} word - 输入单词
-         * @returns {string} 每个字符的位置拼接（不足10补0）
+         * 对应OC中的changeToNewWordWithReferString:word:
+         * 根据参考字符串，将单词（字母）转为位置字符串（补0）
          */
         function changeToNewWordWithReferString(referString, word) {
-            let newWord = "";
+            let newWord = '';
             for (let i = 0; i < word.length; i++) {
-                const letter = word[i].toLowerCase(); // 统一转为小写（兼容大写输入）
+                const letter = word.charAt(i);
                 const index = returnIndexWithReferString(referString, letter);
+                // 小于10补0，转为两位字符串
                 newWord += index < 10 ? `0${index}` : `${index}`;
             }
             return newWord;
         }
 
         /**
-         * 主函数：执行批量转换（对应OC的 begin 方法）
+         * 对应OC中的returnIndexWithReferString:charToFind:
+         * 根据参考字符串，查找字符的位置（从1开始计数）
          */
-        function runConversion() {
-            // 1. 获取用户输入的基础逻辑字符串（去空，默认a-z）
-            let referString = document.getElementById("referStringInput").value.trim();
-            
-            // 2. 获取输入单词数组（去空、去重空格）
-            const input = document.getElementById("wordInput").value.trim();
-            const words = input.split(",").map(word => word.trim()).filter(word => word);
-
-            // 校验：基础逻辑字符串不能为空
-            if (referString.length === 0) {
-                alert("逻辑字符不能为空！");
-                return;
-            }
-            // 校验：单词数组不能为空
-            if (words.length === 0) {
-                alert("请输入有效的单词（用逗号分隔）！");
-                return;
-            }
-
-            let indexwords = ""; // 位置转字母的拼接结果
-            let newWords = "";  // 字符转位置的拼接结果
-
-            // 3. 遍历每个单词执行转换（与OC逻辑一致）
-            for (const word of words) {
-                // 位置转字母：用单词长度作为位置，获取对应字符
-                const indexWord = returnIndexStringWithReferString(referString, word.length);
-                indexwords += indexWord;
-
-                // 字符转位置：将单词每个字符转为位置字符串
-                const newWord = changeToNewWordWithReferString(referString, word);
-                newWords += newWord;
-            }
-
-            // 4. 展示结果
-            document.getElementById("finalOutput").textContent = `${referString}-${indexwords}-${newWords}`;
+        function returnIndexWithReferString(referString, charToFind) {
+            const index = referString.indexOf(charToFind);
+            // 找不到返回0，找到返回位置+1（与OC逻辑一致）
+            return index !== -1 ? index + 1 : 0;
         }
-        
+
+        /**
+         * 对应OC中的returnIndexStringWithReferString:index:
+         * 根据参考字符串，将位置转为对应的字符（位置从1开始）
+         */
+        function returnIndexStringWithReferString(referString, index) {
+            // 验证索引有效性
+            if (index < 1 || index > referString.length) {
+                return '';
+            }
+            return referString.charAt(index - 1);
+        }
+
+        /**
+         * 日志输出辅助函数
+         */
+        function log(message) {
+            const logElement = document.getElementById('logResult');
+            logElement.innerHTML += `${message}\n`;
+            console.log(message); // 同时输出到控制台
+        }
     </script>
 </body>
 </html>
