@@ -4,68 +4,40 @@
     <meta charset="UTF-8">
     <title>Code-Str转换小工具</title>
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            line-height: 1.6;
-        }
-        .container {
-            max-width: 800px;
-            margin: 0 auto;
-            padding: 20px;
-            border: 1px solid #eee;
-            border-radius: 8px;
-        }
-        .input-group {
-            margin: 15px 0;
-        }
-        label {
-            display: block;
-            margin-bottom: 5px;
-            font-weight: bold;
-        }
-        input {
-            width: 100%;
-            padding: 8px;
-            box-sizing: border-box;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-        }
-        button {
-            padding: 10px 20px;
-            background: #007bff;
-            color: white;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-        }
-        button:hover {
-            background: #0056b3;
-        }
-        .log-area {
-            margin-top: 20px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 4px;
-            white-space: pre-wrap;
-            font-family: monospace;
-        }
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
+        .container { background: #f5f5f5; padding: 2rem; border-radius: 8px; }
+        h1 { color: #333; text-align: center; }
+        .input-group { margin: 1rem 0; }
+        label { display: block; margin-bottom: 0.5rem; font-weight: bold; }
+        input[type="text"], textarea { width: 100%; padding: 0.8rem; border: 1px solid #ddd; border-radius: 4px; resize: vertical; }
+        textarea { min-height: 100px; }
+        button { background: #007bff; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 1.5rem; padding: 1rem; background: white; border-radius: 4px; border: 1px solid #eee; }
+        .result h3 { margin-top: 0; color: #333; }
+        .output { font-family: monospace; font-size: 1rem; white-space: pre-wrap; word-break: break-all; }
+        .tip { font-size: 0.9rem; color: #666; margin-top: 0.3rem; }
     </style>
 </head>
 <body>
     <div class="container">
         <h1>Code-Str转换小工具</h1>
+        
         <div class="input-group">
             <label for="referInput">逻辑字符</label>
             <input type="text" id="referInput" value="" placeholder="逻辑字符">
         </div>
+        
         <div class="input-group">
             <label for="wordsInput">输入字符串</label>
             <input type="text" id="wordsInput" value="" placeholder="请输入类似ab-010203的字符串">
         </div>
+        
         <button onclick="begin()">执行转换</button>
-        <div class="log-area" id="logResult">
-            执行结果将显示在这里...
+        
+        <div class="result">
+            <h3>转换结果</h3>
+            <p class="output" id="logResult"></p>
         </div>
     </div>
 
@@ -75,7 +47,7 @@
          */
         function begin() {
             const logElement = document.getElementById('logResult');
-            logElement.innerHTML = ''; // 清空日志
+            logElement.textContent = ''; // 清空日志
 
             // 获取用户输入的参考字符串
             const referString = document.getElementById('referInput').value.trim();
@@ -164,7 +136,7 @@
          */
         function log(message) {
             const logElement = document.getElementById('logResult');
-            logElement.innerHTML += `${message}\n`;
+            logElement.textContent += `${message}\n`;
             console.log(message); // 同时输出到控制台
         }
     </script>
